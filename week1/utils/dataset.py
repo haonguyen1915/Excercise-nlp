@@ -13,10 +13,10 @@ def understanding_data():
     # print(test.head())
 
 
-def prepare_data():
-    train = read_data('{}/week1/data/train.tsv'.format(prj_dir))
-    validation = read_data('{}/week1/data/validation.tsv'.format(prj_dir))
-    test = pd.read_csv('{}/week1/data/test.tsv'.format(prj_dir), sep='\t')
+def prepare_data(base_data):
+    train = read_data('{}/train.tsv'.format(base_data))
+    validation = read_data('{}/validation.tsv'.format(base_data))
+    test = pd.read_csv('{}/test.tsv'.format(base_data), sep='\t')
     X_train, y_train = train['title'].values, train['tags'].values
     X_val, y_val = validation['title'].values, validation['tags'].values
     X_test = test['title'].values

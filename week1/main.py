@@ -14,7 +14,7 @@ if __name__ == "__main__":
     try:
         X_train_mybag, X_val_mybag, X_test_mybag = load_context("week1/data/data_train.pkl")
     except FileNotFoundError:
-        X_train, y_train, X_val, y_val, X_test = prepare_data()
+        X_train, y_train, X_val, y_val, X_test = prepare_data(base_path = "week1/data")
         words_counts = Counter([word for line in X_train for word in line.split(' ')])
         tags_counts = Counter([item for taglist in y_train for item in taglist])
 
