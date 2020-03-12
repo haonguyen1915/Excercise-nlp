@@ -109,7 +109,7 @@ def normalize_sizes(y_pred, y_true):
     return y_pred, y_true
 
 
-def compute_accuracy(y_pred, y_true, mask_index=0):
+def compute_accuracy(y_pred, y_true, mask_index=20503):
     y_pred, y_true = normalize_sizes(y_pred, y_true)
 
     _, y_pred_indices = y_pred.max(dim=1)
@@ -124,7 +124,7 @@ def compute_accuracy(y_pred, y_true, mask_index=0):
     return acc
 
 
-def sequence_loss(y_pred, y_true, mask_index=1):
+def sequence_loss(y_pred, y_true, mask_index=20503):
 
     y_pred, y_true = normalize_sizes(y_pred, y_true)
     # print(mask_index)
