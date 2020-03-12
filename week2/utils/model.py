@@ -6,7 +6,7 @@ from haolib import *
 _logger = LogTracker()
 _logger.disable_print_log()
 class SurnameGenerationModel(nn.Module):
-    def __init__(self, char_embedding_size, char_vocab_size, rnn_hidden_size,
+    def __init__(self, char_embedding_size, char_vocab_size, out_feature_size, rnn_hidden_size,
                  batch_first=True, padding_idx=0, dropout_p=0.5):
         """
         Args:
@@ -31,7 +31,7 @@ class SurnameGenerationModel(nn.Module):
                           batch_first=batch_first)
 
         self.fc = nn.Linear(in_features=rnn_hidden_size,
-                            out_features=char_vocab_size)
+                            out_features=out_feature_size)
 
         self._dropout_p = dropout_p
 
@@ -82,6 +82,7 @@ class SurnameGenerationModel(nn.Module):
 if __name__ == "__main__":
     model = SurnameGenerationModel(char_embedding_size=32,
                                    char_vocab_size=88,
+                                   out_feature_size=10,
                                    rnn_hidden_size=32,
                                    padding_idx=0)
     input = tensor([[2, 49, 18, 15, 18, 33, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],

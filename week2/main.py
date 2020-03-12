@@ -1,4 +1,5 @@
 # https://colab.research.google.com/drive/1zV0IEDv9t66HeEOMfBVJzRlys5vfDJNe
+# https://colab.research.google.com/drive/1bDT_yMj1fnHMFG9wo-mmeBahPO5aqYXJ#scrollTo=hr5PShABrXTV
 from week2.utils.setup_google_colab import setup_week2
 from haolib import *
 from week2.utils.utility import *
@@ -7,7 +8,7 @@ from week2.utils.model import SurnameGenerationModel
 from torch import optim
 from haolib.lib_ai.learner import Learner
 prj_dir = get_cfd(backward=1)
-
+seed_everything(777)
 
 def set_up():
     setup_week2()
@@ -49,6 +50,7 @@ def get_learner():
     print(surname_container)
     model = SurnameGenerationModel(char_embedding_size=char_embedding_size,
                                    char_vocab_size=len(vectorizer.words_vocab),
+                                   out_feature_size=len(vectorizer.tags_vocab),
                                    rnn_hidden_size=rnn_hidden_size,
                                    padding_idx=vectorizer.words_vocab.mask_index)
     loss_func = sequence_loss
@@ -73,25 +75,39 @@ def train():
 
 
 def evaluation():
-    surname_container, dataset = get_data(bs=64)
-    vectorizer = dataset.get_vectorizer()
+    surname_container, vectorizer = get_data(bs=64)
     learner = get_learner()
     learner.load("{}/week2/data/statge01".format(prj_dir))
+
+    text = ['RT', '<USR>', ':', 'Online', 'ticket', 'sales', 'for', 'Ghostland', 'Observatory', 'extended', 'until',
+            '6', 'PM', 'EST', 'due', 'to', 'high', 'demand', '.', 'Get', 'them', 'before', 'they', 'sell', 'out', '...']
+    _, vectorizer = get_data(bs=1)
+    data, _ = vectorizer.vectorize(text, vector_length=50)
+    print(data)
+    print(type(data))
+
+    data = torch.from_numpy(data)
+    data = torch.unsqueeze(data, dim=0)
+    describe_tensor(data)
+
+    print(learner.predict(data))
+    # learner.data_container.
+    # print(learner.validate())
     # number of names to generate
     num_names = 10
-    model = load_model("{}/week2/data/model.pth".format(prj_dir))
-    model.to("cpu")
-    # Generate nationality hidden state
-    sampled_surnames = decode_samples(
-        sample_from_model(model, vectorizer, num_samples=num_names),
-        vectorizer)
-    # Show results
-    print("-" * 15)
-    for i in range(num_names):
-        print(sampled_surnames[i])
+    # model = load_model("{}/week2/data/model.pth".format(prj_dir))
+    # model.to("cpu")
+    # # Generate nationality hidden state
+    # sampled_surnames = decode_samples(
+    #     sample_from_model(model, vectorizer, num_samples=num_names),
+    #     vectorizer)
+    # # Show results
+    # print("-" * 15)
+    # for i in range(num_names):
+    #     print(sampled_surnames[i])
 
 
 if __name__ == "__main__":
-    train()
-    # evaluation()
+    # train()
+    evaluation()
     # predict("Sarraf")
