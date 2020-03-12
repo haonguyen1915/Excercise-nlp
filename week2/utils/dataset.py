@@ -22,9 +22,9 @@ def build_vocabs():
     validation_tokens, validation_tags = read_data('{}/week2/data/validation.txt'.format(prj_dir))
     test_tokens, test_tags = read_data('{}/week2/data/test.txt'.format(prj_dir))
     special_tokens = ['<UNK>', '<PAD>']
-    special_tags = ['O']
-    token2idx, idx2token = build_dict(train_tokens + validation_tokens, special_tokens)
-    tag2idx, idx2tag = build_dict(train_tags, special_tags)
+    # special_tags = ['O']
+    token2idx, idx2token = build_dict(train_tokens + validation_tokens)
+    tag2idx, idx2tag = build_dict(train_tags)
     words_vocab = SequenceVocabulary(token_to_idx=token2idx, unk_token='<UNK>', mask_token='<PAD>')
     tags_vob = Vocabulary(token_to_idx=tag2idx)
     return words_vocab, tags_vob

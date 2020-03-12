@@ -4,10 +4,12 @@ from week2.utils.setup_google_colab import setup_week2
 from haolib import *
 from week2.utils.utility import *
 from week2.utils.dataset import *
-from week2.utils.model import SurnameGenerationModel
+from week2.utils.model import NERClassifierModel
 from torch import optim
 from haolib.lib_ai.learner import Learner
 prj_dir = get_cfd(backward=1)
+vectorizer_path = '{}/week2/data/vecterizer.pkl'.format(prj_dir)
+
 seed_everything(777)
 
 def set_up():
@@ -23,7 +25,12 @@ def download_dataset():
 
 def get_data(bs):
     words_vocab, tags_vob = build_vocabs()
-    my_vectorizer = MyVectorizer(words_vocab, tags_vob)
+    try:
+        my_vectorizer = load_context(vectorizer_path)
+        print("Loaded vectorizer succsesfully")
+    except FileNotFoundError:
+        my_vectorizer = MyVectorizer(words_vocab, tags_vob)
+        save_context(my_vectorizer, vectorizer_path)
     train_tokens, train_tags = read_data('{}/week2/data/train.txt'.format(prj_dir))
     validation_tokens, validation_tags = read_data('{}/week2/data/validation.txt'.format(prj_dir))
     test_tokens, test_tags = read_data('{}/week2/data/test.txt'.format(prj_dir))
@@ -33,8 +40,12 @@ def get_data(bs):
     test_ds = MyDataset(my_vectorizer, test_tokens, test_tags)
 
     data_container = DataContainer(train_ds=train_ds, valid_ds=valid_ds, test_ds=test_ds, bs=bs)
-    print("mask_index: {}".format(my_vectorizer.words_vocab.mask_index))
-    print("unk_index: {}".format(my_vectorizer.words_vocab.unk_index))
+    # print("mask_index: {}".format(my_vectorizer.words_vocab.mask_index))
+    # print("unk_index: {}".format(my_vectorizer.words_vocab.unk_index))
+    # print("tag_2_idx: {}".format(my_vectorizer.tags_vocab.to_serializable()["token_to_idx"]))
+    # # print("tag_2_idx: {}".format(my_vectorizer.tags_vocab.to_serializable()["token_to_idx"]))
+    # print(len(my_vectorizer.tags_vocab.to_serializable()["token_to_idx"]))
+    # exit()
 
     return data_container, my_vectorizer
 
@@ -48,9 +59,10 @@ def get_learner():
     batch_size = 128
     surname_container, vectorizer = get_data(bs=batch_size)
     print(surname_container)
-    model = SurnameGenerationModel(char_embedding_size=char_embedding_size,
+    model = NERClassifierModel(char_embedding_size=char_embedding_size,
                                    char_vocab_size=len(vectorizer.words_vocab),
                                    out_feature_size=len(vectorizer.tags_vocab),
+                                   # out_feature_size=len(vectorizer.words_vocab),
                                    rnn_hidden_size=rnn_hidden_size,
                                    padding_idx=vectorizer.words_vocab.mask_index)
     loss_func = sequence_loss
@@ -108,6 +120,6 @@ def evaluation():
 
 
 if __name__ == "__main__":
-    # train()
-    evaluation()
+    train()
+    # evaluation()
     # predict("Sarraf")

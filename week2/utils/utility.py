@@ -37,36 +37,61 @@ def read_data(file_path):
     return tokens, tags
 
 
-def build_dict(tokens_or_tags, special_tokens):
+# def build_dict(tokens_or_tags, special_tokens):
+#     """
+#         tokens_or_tags: a list of lists of tokens or tags
+#         special_tokens: some special tokens
+#     """
+#     # Create a dictionary with default value 0
+#     tok2idx = {}
+#     idx2tok = []
+#
+#     # Create mappings from tokens to indices and vice versa
+#     # Add special tokens to dictionaries
+#     # The first special token must have index 0
+#
+#     ######################################
+#     ######### YOUR CODE HERE #############
+#     ######################################
+#     vocab = set([t for ts in tokens_or_tags for t in ts])
+#     voab_size = len(vocab) + len(special_tokens)
+#     idx2tok = [''] * voab_size
+#
+#     for i, token in enumerate(special_tokens):
+#         tok2idx[token] = i
+#         idx2tok[i] = token
+#
+#     for i, token in enumerate(vocab, len(special_tokens)):
+#         print(i)
+#         exit()
+#         tok2idx[token] = i
+#         idx2tok[i] = token
+#
+#     return tok2idx, idx2tok
+
+
+def build_dict(tokens_or_tags):
     """
         tokens_or_tags: a list of lists of tokens or tags
         special_tokens: some special tokens
     """
     # Create a dictionary with default value 0
-    tok2idx = defaultdict(lambda: 0)
+    tok2idx = {}
     idx2tok = []
 
-    # Create mappings from tokens to indices and vice versa
-    # Add special tokens to dictionaries
-    # The first special token must have index 0
-
-    ######################################
-    ######### YOUR CODE HERE #############
-    ######################################
     vocab = set([t for ts in tokens_or_tags for t in ts])
-    voab_size = len(vocab) + len(special_tokens)
+    voab_size = len(vocab)
     idx2tok = [''] * voab_size
 
-    for i, token in enumerate(special_tokens):
-        tok2idx[token] = i
-        idx2tok[i] = token
+    # for i, token in enumerate(special_tokens):
+    #     tok2idx[token] = i
+    #     idx2tok[i] = token
 
-    for i, token in enumerate(vocab, len(special_tokens)):
+    for i, token in enumerate(vocab):
         tok2idx[token] = i
         idx2tok[i] = token
 
     return tok2idx, idx2tok
-
 
 def normalize_sizes(y_pred, y_true):
     """Normalize tensor sizes
@@ -77,9 +102,6 @@ def normalize_sizes(y_pred, y_true):
         y_true (torch.Tensor): the target predictions
             If a matrix, reshapes to be a vector
     """
-    # describe_tensor(y_pred)
-    # describe_tensor(y_true)
-    # exit()
     if len(y_pred.size()) == 3:
         y_pred = y_pred.contiguous().view(-1, y_pred.size(2))
     if len(y_true.size()) == 2:
@@ -103,5 +125,8 @@ def compute_accuracy(y_pred, y_true, mask_index=0):
 
 
 def sequence_loss(y_pred, y_true, mask_index=1):
+
     y_pred, y_true = normalize_sizes(y_pred, y_true)
+    # print(mask_index)
+    # exit()
     return F.cross_entropy(y_pred, y_true, ignore_index=mask_index)
