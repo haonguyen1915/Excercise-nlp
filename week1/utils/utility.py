@@ -2,8 +2,9 @@ import pandas as pd
 from ast import literal_eval
 from scipy import sparse as sp_sparse
 from week1.utils.constants import *
-
-
+from sklearn.preprocessing import MultiLabelBinarizer
+from sklearn.multiclass import OneVsRestClassifier
+from sklearn.linear_model import LogisticRegression, RidgeClassifier
 def read_data(filename):
     data = pd.read_csv(filename, sep='\t')
     data['tags'] = data['tags'].apply(literal_eval)
@@ -33,3 +34,22 @@ def convert_to_scipy(X_train, X_val, X_test):
     print('X_val shape ', X_val_mybag.shape)
     print('X_test shape ', X_test_mybag.shape)
     return X_train_mybag, X_val_mybag, X_test_mybag
+
+
+def train_classifier(X_train, y_train):
+    """
+      X_train, y_train — training data
+
+      return: trained classifier
+    """
+
+    # Create and fit LogisticRegression wraped into OneVsRestClassifier.
+
+    ######################################
+    ######### YOUR CODE HERE #############
+    ######################################
+
+
+    model = OneVsRestClassifier(LogisticRegression(penalty='l2', C=1.0))
+    model.fit(X_train, y_train)
+    return model

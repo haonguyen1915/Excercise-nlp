@@ -127,7 +127,8 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
-data
+week2/data
 weights
+data
 *.pth
 *.pkl
