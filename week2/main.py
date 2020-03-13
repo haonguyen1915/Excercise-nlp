@@ -22,10 +22,11 @@ learning_rate = 1e-3
 
 def get_learner(data_container, vectorizer):
     loss_func = nn.NLLLoss()
+    # acc_func = Acc(mask_idx=0)
     model = LSTMNERClassifier(EMBEDDING_DIM, HIDDEN_DIM, len(vectorizer.words_vocab), len(vectorizer.tags_vocab))
     optimizer = optim.SGD(params=model.parameters(), lr=learning_rate, momentum=0.9)
     learner = Seq2SeqLearner(model=model, data_container=data_container, loss_func=loss_func, opt_func=optimizer,
-                             acc_func=compute_accuracy, no_batch=True)
+                             no_batch=True, mask_idx_acc=-1)
     return learner
 
 
@@ -34,19 +35,20 @@ def train_toy():
     learner = get_learner(data_container, vectorizer)
     learner.model_info()
     learner.fit_one_cycle(50, 0.1, only_save_best=True)
-    learner.test_n_case()
+    learner.test_n_case(show_indice=True)
     # train_loader = learner.data_container.get_train_dl()
     # print("X: {}".format(x[0:1]))
     # print("y:    {}".format(y))
     # out = learner.predict(x[0:1])
     # print("pred: {}".format(out["class_index"]))
 
+
 def train():
     data_container, vectorizer = get_data_vecterizer(bs=1)
     learner = get_learner(data_container, vectorizer)
     learner.model_info()
     learner.fit_one_cycle(1, 0.1, only_save_best=True)
-    learner.test_n_case()
+    learner.test_n_case(show_indice=True)
     # train_loader = learner.data_container.get_train_dl()
     # print("X: {}".format(x[0:1]))
     # print("y:    {}".format(y))
@@ -75,7 +77,8 @@ def evaluation():
 
 
 if __name__ == "__main__":
-    train()
+    train_toy()
+    # train()
     # test_some_case()
     # evaluation()
     # predict("Sarraf")

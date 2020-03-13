@@ -113,18 +113,18 @@ def get_toy_data_vecterizer(bs=1):
     return data_container, my_vectorizer
 
 
-def get_data_vecterizer(bs, vectorizer_path=None):
+def get_data_vecterizer(bs, vectorizer_path="./"):
     train_tokens, train_tags = read_data('{}/week2/data/train.txt'.format(prj_dir))
     validation_tokens, validation_tags = read_data('{}/week2/data/validation.txt'.format(prj_dir))
     test_tokens, test_tags = read_data('{}/week2/data/test.txt'.format(prj_dir))
 
     words_vocab, tags_vob = build_vocabs(train_tokens, train_tags, validation_tokens)
-    if vectorizer_path is not None:
+    if vectorizer_path is not None and os.path.isfile(vectorizer_path):
         my_vectorizer = load_context(vectorizer_path)
         print("Loaded vectorizer succsesfully")
     else:
         my_vectorizer = MyVectorizer(words_vocab, tags_vob)
-        # save_context(my_vectorizer, vectorizer_path)
+        save_context(my_vectorizer, vectorizer_path)
     train_ds = MyDataset(my_vectorizer, train_tokens, train_tags)
     valid_ds = MyDataset(my_vectorizer, validation_tokens, validation_tags)
     test_ds = MyDataset(my_vectorizer, test_tokens, test_tags)
