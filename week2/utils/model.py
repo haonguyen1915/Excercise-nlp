@@ -29,14 +29,21 @@ class LSTMNERClassifier(nn.Module):
         return tag_scores
 
 
+START_TAG = "<START>"
+STOP_TAG = "<STOP>"
+EMBEDDING_DIM = 5
+HIDDEN_DIM = 4
+
+
 class BiLSTM_CRF(nn.Module):
 
-    def __init__(self, vocab_size, tag_to_ix, embedding_dim, hidden_dim):
+    def __init__(self, vocab_size, tag_to_ix, embedding_dim, hidden_dim, use_gpu=False):
         super(BiLSTM_CRF, self).__init__()
         self.embedding_dim = embedding_dim
         self.hidden_dim = hidden_dim
         self.vocab_size = vocab_size
         self.tag_to_ix = tag_to_ix
+        self.use_gpu = use_gpu
         self.tagset_size = len(tag_to_ix)
 
         self.word_embeds = nn.Embedding(vocab_size, embedding_dim)
@@ -59,8 +66,12 @@ class BiLSTM_CRF(nn.Module):
         self.hidden = self.init_hidden()
 
     def init_hidden(self):
-        return (torch.randn(2, 1, self.hidden_dim // 2),
-                torch.randn(2, 1, self.hidden_dim // 2))
+        if self.use_gpu:
+            return (torch.randn(2, 1, self.hidden_dim // 2).cuda(),
+                    torch.randn(2, 1, self.hidden_dim // 2).cuda())
+        else:
+            return (torch.randn(2, 1, self.hidden_dim // 2),
+                    torch.randn(2, 1, self.hidden_dim // 2))
 
     def _forward_alg(self, feats):
         # Do the forward algorithm to compute the partition function
@@ -70,7 +81,8 @@ class BiLSTM_CRF(nn.Module):
 
         # Wrap in a variable so that we will get automatic backprop
         forward_var = init_alphas
-
+        if self.use_gpu:
+            forward_var = forward_var.cuda()
         # Iterate through the sentence
         for feat in feats:
             alphas_t = []  # The forward tensors at this timestep
@@ -98,6 +110,7 @@ class BiLSTM_CRF(nn.Module):
         # exit()
         self.hidden = self.init_hidden()
         embeds = self.word_embeds(sentence).view(len(sentence), 1, -1)
+
         lstm_out, self.hidden = self.lstm(embeds, self.hidden)
         lstm_out = lstm_out.view(len(sentence), self.hidden_dim)
         lstm_feats = self.hidden2tag(lstm_out)
@@ -106,7 +119,13 @@ class BiLSTM_CRF(nn.Module):
     def _score_sentence(self, feats, tags):
         # Gives the score of a provided tag sequence
         score = torch.zeros(1)
-        tags = torch.cat([torch.tensor([self.tag_to_ix[START_TAG]], dtype=torch.long), tags])
+
+        if self.use_gpu:
+            tags = torch.cat([torch.cuda.LongTensor([self.tag_to_ix[START_TAG]]), tags])
+            score = score.cuda()
+        else:
+            tags = torch.cat([torch.tensor([self.tag_to_ix[START_TAG]], dtype=torch.long), tags])
+
         for i, feat in enumerate(feats):
             score = score + \
                     self.transitions[tags[i + 1], tags[i]] + feat[tags[i + 1]]
@@ -122,6 +141,8 @@ class BiLSTM_CRF(nn.Module):
 
         # forward_var at step i holds the viterbi variables for step i-1
         forward_var = init_vvars
+        if self.use_gpu:
+            forward_var = forward_var.cuda()
         for feat in feats:
             bptrs_t = []  # holds the backpointers for this step
             viterbivars_t = []  # holds the viterbi variables for this step
@@ -163,20 +184,13 @@ class BiLSTM_CRF(nn.Module):
         gold_score = self._score_sentence(feats, tags)
         return forward_score - gold_score
 
-
     def forward(self, sentence):  # dont confuse this with _forward_alg above.
-        # describe_tensor(sentence)
-        # exit()
         # Get the emission scores from the BiLSTM
         lstm_feats = self._get_lstm_features(sentence)
 
         # Find the best path, given the features.
         score, tag_seq = self._viterbi_decode(lstm_feats)
-        # torch.from_numpy(tag_seq)
-        tag_seq = torch.tensor(tag_seq)
-
-        tag_seq = one_hot_embedding(tag_seq, self.tagset_size)
-        return tag_seq
+        return score, tag_seq
 
 
 if __name__ == "__main__":
