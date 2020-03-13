@@ -36,16 +36,6 @@ def train_toy():
     learner.model_info()
     learner.fit_one_cycle(20, 0.1, only_save_best=True)
     learner.test_n_case(show_indice=True)
-    # preds = learner.confusion_matrix()
-    preds = learner.plot_confusion_matrix()
-    print(learner.validate())
-    print(preds)
-    # train_loader = learner.data_container.get_train_dl()
-    # print("X: {}".format(x[0:1]))
-    # print("y:    {}".format(y))
-    # out = learner.predict(x[0:1])
-    # print("pred: {}".format(out["class_index"]))
-
 
 def train():
     data_container, vectorizer = get_data_vecterizer(bs=1)
@@ -68,8 +58,8 @@ def evaluation():
     learner.plot_confusion_matrix(ds_type=DS_VALID)
 
 if __name__ == "__main__":
-    # train_toy()
+    train_toy()
     # train()
     # test_some_case()
-    evaluation()
+    # evaluation()
     # predict("Sarraf")

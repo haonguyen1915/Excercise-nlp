@@ -1,13 +1,9 @@
 # https://colab.research.google.com/drive/1zV0IEDv9t66HeEOMfBVJzRlys5vfDJNe
 # Mine: https://colab.research.google.com/drive/1bDT_yMj1fnHMFG9wo-mmeBahPO5aqYXJ#scrollTo=hr5PShABrXTV
-from week2.utils.setup_google_colab import setup_week2
-from haolib import *
-from week2.utils.utility import *
 from week2.utils.dataset import *
 from week2.utils.model import LSTMNERClassifier, BiLSTM_CRF
 from torch import optim
 from haolib.lib_ai.seq2seq_learner import Seq2SeqLearner
-from torch import nn
 
 prj_dir = get_cfd(backward=1)
 vectorizer_path = '{}/week2/data/vecterizer_02.pkl'.format(prj_dir)
@@ -32,7 +28,7 @@ def get_learner(data_container, vectorizer):
     return learner
 
 def train_toy():
-    data_container, vectorizer = get_toy_data_vecterizer(bs=1)
+    data_container, vectorizer = get_toy_data_vecterizer(1, START_TAG, STOP_TAG)
     learner = get_learner(data_container, vectorizer)
 
     learner.model_info()
@@ -48,8 +44,5 @@ def train():
     learner.test_n_case(show_indice=True)
 
 if __name__ == "__main__":
-    # train_toy()
-    train()
-    # test_some_case()
-    # evaluation()
-    # predict("Sarraf")
+    train_toy()
+    # train()

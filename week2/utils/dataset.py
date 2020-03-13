@@ -91,7 +91,7 @@ class MyDataset(BaseDataset):
         return word_vector, tag_vector
 
 
-def get_toy_data_vecterizer(bs=1):
+def get_toy_data_vecterizer(bs=1, tart_seq_token=None, end_seq_token=None):
     training_data = [(
         "the wall street journal reported today that apple corporation made money".split(),
         "B I I I O O O B I O O".split()
@@ -102,7 +102,7 @@ def get_toy_data_vecterizer(bs=1):
     train_tokens = [words[0] for words in training_data]
     train_tags = [words[1] for words in training_data]
 
-    words_vocab, tags_vob = build_vocabs(train_tokens, train_tags, train_tokens)
+    words_vocab, tags_vob = build_vocabs(train_tokens, train_tags, train_tokens, tart_seq_token, end_seq_token)
     my_vectorizer = MyVectorizer(words_vocab, tags_vob)
     train_ds = MyDataset(my_vectorizer, train_tokens, train_tags)
     valid_ds = MyDataset(my_vectorizer, train_tokens, train_tags)
