@@ -3,7 +3,6 @@ import torch
 from haolib import *
 from torch.nn import functional as F
 
-
 def read_data(file_path):
     tokens = []
     tags = []
@@ -130,3 +129,15 @@ def sequence_loss(y_pred, y_true, mask_index=20503):
     # print(mask_index)
     # exit()
     return F.cross_entropy(y_pred, y_true, ignore_index=mask_index)
+
+def set_up():
+    setup_week2()
+
+
+def download_dataset():
+    import sys
+    sys.path.append("..")
+    from week2.common.download_utils import download_week2_resources
+    download_week2_resources()
+
+

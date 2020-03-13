@@ -17,11 +17,11 @@ def understanding_data():
         print()
 
 
-def build_vocabs():
-    train_tokens, train_tags = read_data('{}/week2/data/train.txt'.format(prj_dir))
-    validation_tokens, validation_tags = read_data('{}/week2/data/validation.txt'.format(prj_dir))
-    test_tokens, test_tags = read_data('{}/week2/data/test.txt'.format(prj_dir))
-    special_tokens = ['<UNK>', '<PAD>']
+def build_vocabs(train_tokens, train_tags, validation_tokens):
+    # train_tokens, train_tags = read_data('{}/week2/data/train.txt'.format(prj_dir))
+    # validation_tokens, validation_tags = read_data('{}/week2/data/validation.txt'.format(prj_dir))
+    # test_tokens, test_tags = read_data('{}/week2/data/test.txt'.format(prj_dir))
+    # special_tokens = ['<UNK>', '<PAD>']
     # special_tags = ['O']
     token2idx, idx2token = build_dict(train_tokens + validation_tokens)
     tag2idx, idx2tag = build_dict(train_tags)
@@ -48,8 +48,6 @@ class MyVectorizer(Vectorizer):
         out_vector = np.zeros(vector_length, dtype=np.int64)
         out_vector[:len(indices)] = indices
         out_vector[len(indices):] = self.words_vocab.mask_index
-
-
 
         return out_vector, len(indices)
 
@@ -82,7 +80,7 @@ class MyDataset(BaseDataset):
                         feature length (x_length)
                 """
 
-        word_vector, vec_length = self.vectorizer.vectorize(self.data[index], self._max_seq_length)
+        word_vector, vec_length = self.vectorizer.vectorize(self.data[index], -1)
 
         tag_indices = []
         tag_indices.extend(self.vectorizer.tags_vocab.lookup_token(token)
@@ -92,6 +90,49 @@ class MyDataset(BaseDataset):
         tag_vector[len(tag_indices):] = self.vectorizer.tags_vocab.lookup_token('O')
         # tag_index = self.vectorizer.tags_vocab.lookup_token(index)
         return word_vector, tag_vector
+
+
+def get_toy_data_vecterizer(bs=1):
+    training_data = [(
+        "the wall street journal reported today that apple corporation made money".split(),
+        "B I I I O O O B I O O".split()
+    ), (
+        "georgia tech is a university in georgia".split(),
+        "B I O O O O B".split()
+    )]
+    train_tokens = [words[0] for words in training_data]
+    train_tags = [words[1] for words in training_data]
+
+    words_vocab, tags_vob = build_vocabs(train_tokens, train_tags, train_tokens)
+    my_vectorizer = MyVectorizer(words_vocab, tags_vob)
+    train_ds = MyDataset(my_vectorizer, train_tokens, train_tags)
+    valid_ds = MyDataset(my_vectorizer, train_tokens, train_tags)
+    test_ds = MyDataset(my_vectorizer, train_tokens, train_tags)
+    data_container = DataContainer(train_ds=train_ds, valid_ds=valid_ds, test_ds=test_ds, bs=bs)
+
+    return data_container, my_vectorizer
+
+
+def get_data_vecterizer(bs, vectorizer_path=None):
+    train_tokens, train_tags = read_data('{}/week2/data/train.txt'.format(prj_dir))
+    validation_tokens, validation_tags = read_data('{}/week2/data/validation.txt'.format(prj_dir))
+    test_tokens, test_tags = read_data('{}/week2/data/test.txt'.format(prj_dir))
+
+    words_vocab, tags_vob = build_vocabs(train_tokens, train_tags, validation_tokens)
+    if vectorizer_path is not None:
+        my_vectorizer = load_context(vectorizer_path)
+        print("Loaded vectorizer succsesfully")
+    else:
+        my_vectorizer = MyVectorizer(words_vocab, tags_vob)
+        # save_context(my_vectorizer, vectorizer_path)
+    train_ds = MyDataset(my_vectorizer, train_tokens, train_tags)
+    valid_ds = MyDataset(my_vectorizer, validation_tokens, validation_tags)
+    test_ds = MyDataset(my_vectorizer, test_tokens, test_tags)
+
+    data_container = DataContainer(train_ds=train_ds, valid_ds=valid_ds, test_ds=test_ds, bs=bs)
+
+    return data_container, my_vectorizer
+
 
 def test_dataset():
     words_vocab, tags_vob = build_vocabs()
@@ -119,13 +160,13 @@ def test_dataset():
     print(x)
     print(y)
 
+
 def test_data_container():
     words_vocab, tags_vob = build_vocabs()
     my_vectorizer = MyVectorizer(words_vocab, tags_vob)
     train_tokens, train_tags = read_data('{}/week2/data/train.txt'.format(prj_dir))
     validation_tokens, validation_tags = read_data('{}/week2/data/validation.txt'.format(prj_dir))
     test_tokens, test_tags = read_data('{}/week2/data/test.txt'.format(prj_dir))
-
     train_ds = MyDataset(my_vectorizer, train_tokens, train_tags)
     valid_ds = MyDataset(my_vectorizer, validation_tokens, validation_tags)
     test_ds = MyDataset(my_vectorizer, test_tokens, test_tags)
@@ -141,9 +182,6 @@ def test_data_container():
     describe_tensor(y)
 
 
-
 if __name__ == "__main__":
     # understanding_data()
     test_data_container()
-
-

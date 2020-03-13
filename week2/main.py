@@ -1,99 +1,68 @@
 # https://colab.research.google.com/drive/1zV0IEDv9t66HeEOMfBVJzRlys5vfDJNe
-# https://colab.research.google.com/drive/1bDT_yMj1fnHMFG9wo-mmeBahPO5aqYXJ#scrollTo=hr5PShABrXTV
+# Mine: https://colab.research.google.com/drive/1bDT_yMj1fnHMFG9wo-mmeBahPO5aqYXJ#scrollTo=hr5PShABrXTV
 from week2.utils.setup_google_colab import setup_week2
 from haolib import *
 from week2.utils.utility import *
 from week2.utils.dataset import *
-from week2.utils.model import NERClassifierModel
+from week2.utils.model import LSTMNERClassifier
 from torch import optim
-from haolib.lib_ai.learner import Learner
+from haolib.lib_ai.seq2seq_learner import Seq2SeqLearner
+from torch import nn
+
 prj_dir = get_cfd(backward=1)
-vectorizer_path = '{}/week2/data/vecterizer.pkl'.format(prj_dir)
+vectorizer_path = '{}/week2/data/vecterizer_.pkl'.format(prj_dir)
 
 seed_everything(777)
-
-def set_up():
-    setup_week2()
-
-
-def download_dataset():
-    import sys
-    sys.path.append("..")
-    from week2.common.download_utils import download_week2_resources
-    download_week2_resources()
+# Model hyper parameters
+EMBEDDING_DIM = 32
+HIDDEN_DIM = 32
+# Training hyper parameter
+learning_rate = 1e-3
 
 
-def get_data(bs):
-    words_vocab, tags_vob = build_vocabs()
-    try:
-        my_vectorizer = load_context(vectorizer_path)
-        print("Loaded vectorizer succsesfully")
-    except FileNotFoundError:
-        my_vectorizer = MyVectorizer(words_vocab, tags_vob)
-        save_context(my_vectorizer, vectorizer_path)
-    train_tokens, train_tags = read_data('{}/week2/data/train.txt'.format(prj_dir))
-    validation_tokens, validation_tags = read_data('{}/week2/data/validation.txt'.format(prj_dir))
-    test_tokens, test_tags = read_data('{}/week2/data/test.txt'.format(prj_dir))
-
-    train_ds = MyDataset(my_vectorizer, train_tokens, train_tags)
-    valid_ds = MyDataset(my_vectorizer, validation_tokens, validation_tags)
-    test_ds = MyDataset(my_vectorizer, test_tokens, test_tags)
-
-    data_container = DataContainer(train_ds=train_ds, valid_ds=valid_ds, test_ds=test_ds, bs=bs)
-    # print("mask_index: {}".format(my_vectorizer.words_vocab.mask_index))
-    # print("unk_index: {}".format(my_vectorizer.words_vocab.unk_index))
-    # print("tag_2_idx: {}".format(my_vectorizer.tags_vocab.to_serializable()["token_to_idx"]))
-    # # print("tag_2_idx: {}".format(my_vectorizer.tags_vocab.to_serializable()["token_to_idx"]))
-    # print(len(my_vectorizer.tags_vocab.to_serializable()["token_to_idx"]))
-    # exit()
-
-    return data_container, my_vectorizer
-
-
-def get_learner():
-    # Model hyper parameters
-    char_embedding_size = 32
-    rnn_hidden_size = 32
-    # Training hyper parameter
-    learning_rate = 1e-3
-    batch_size = 128
-    surname_container, vectorizer = get_data(bs=batch_size)
-    print(surname_container)
-    model = NERClassifierModel(char_embedding_size=char_embedding_size,
-                                   char_vocab_size=len(vectorizer.words_vocab),
-                                   out_feature_size=len(vectorizer.tags_vocab),
-                                   # out_feature_size=len(vectorizer.words_vocab),
-                                   rnn_hidden_size=rnn_hidden_size,
-                                   padding_idx=vectorizer.words_vocab.mask_index)
-    loss_func = sequence_loss
-    # optimizer = optim.Adam(params=model.parameters(), lr=learning_rate)
+def get_learner(data_container, vectorizer):
+    loss_func = nn.NLLLoss()
+    model = LSTMNERClassifier(EMBEDDING_DIM, HIDDEN_DIM, len(vectorizer.words_vocab), len(vectorizer.tags_vocab))
     optimizer = optim.SGD(params=model.parameters(), lr=learning_rate, momentum=0.9)
-    learner = Learner(model=model, data_container=surname_container, loss_func=loss_func, opt_func=optimizer,
-                      acc_func=compute_accuracy)
+    learner = Seq2SeqLearner(model=model, data_container=data_container, loss_func=loss_func, opt_func=optimizer,
+                             acc_func=compute_accuracy, no_batch=True)
     return learner
 
 
-def train():
-    learner = get_learner()
+def train_toy():
+    data_container, vectorizer = get_toy_data_vecterizer(bs=1)
+    learner = get_learner(data_container, vectorizer)
     learner.model_info()
-    # # learner.lr_finder()
-    # # learner.recoder.plot()
-    try:
-        learner.load("{}/week2/data/statge01".format(prj_dir))
-    except FileNotFoundError:
-        learner.fit_one_cycle(2, 0.001, only_save_best=True)
-        learner.save("{}/week2/data/statge01".format(prj_dir))
-        learner.export("{}/week2/data/model.pth".format(prj_dir))
+    learner.fit_one_cycle(50, 0.1, only_save_best=True)
+    learner.test_n_case()
+    # train_loader = learner.data_container.get_train_dl()
+    # print("X: {}".format(x[0:1]))
+    # print("y:    {}".format(y))
+    # out = learner.predict(x[0:1])
+    # print("pred: {}".format(out["class_index"]))
+
+def train():
+    data_container, vectorizer = get_data_vecterizer(bs=1)
+    learner = get_learner(data_container, vectorizer)
+    learner.model_info()
+    learner.fit_one_cycle(1, 0.1, only_save_best=True)
+    learner.test_n_case()
+    # train_loader = learner.data_container.get_train_dl()
+    # print("X: {}".format(x[0:1]))
+    # print("y:    {}".format(y))
+    # out = learner.predict(x[0:1])
+    # print("pred: {}".format(out["class_index"]))
 
 
 def evaluation():
-    surname_container, vectorizer = get_data(bs=64)
+    data_container, vectorizer = get_data(bs=64)
+    vectorizer = load_context(vectorizer_path)
     learner = get_learner()
     learner.load("{}/week2/data/statge01".format(prj_dir))
-
-    text = ['RT', '<USR>', ':', 'Online', 'ticket', 'sales', 'for', 'Ghostland', 'Observatory', 'extended', 'until',
+    text = ['Snapchat', '<USR>', ':', 'Snapchat', 'ticket', 'French', 'Telecom', 'Ghostland', 'Observatory', 'extended',
+            'until',
             '6', 'PM', 'EST', 'due', 'to', 'high', 'demand', '.', 'Get', 'them', 'before', 'they', 'sell', 'out', '...']
-    _, vectorizer = get_data(bs=1)
+    # _, vectorizer = get_data(bs=1)
     data, _ = vectorizer.vectorize(text, vector_length=50)
     print(data)
     print(type(data))
@@ -103,23 +72,10 @@ def evaluation():
     describe_tensor(data)
 
     print(learner.predict(data))
-    # learner.data_container.
-    # print(learner.validate())
-    # number of names to generate
-    num_names = 10
-    # model = load_model("{}/week2/data/model.pth".format(prj_dir))
-    # model.to("cpu")
-    # # Generate nationality hidden state
-    # sampled_surnames = decode_samples(
-    #     sample_from_model(model, vectorizer, num_samples=num_names),
-    #     vectorizer)
-    # # Show results
-    # print("-" * 15)
-    # for i in range(num_names):
-    #     print(sampled_surnames[i])
 
 
 if __name__ == "__main__":
     train()
+    # test_some_case()
     # evaluation()
     # predict("Sarraf")
