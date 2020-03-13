@@ -11,7 +11,7 @@ from torch import nn
 
 prj_dir = get_cfd(backward=1)
 vectorizer_path = '{}/week2/data/vecterizer_02.pkl'.format(prj_dir)
-model_path = '{}/week2/data/model_02.pkl'.format(prj_dir)
+model_path = '{}/week2/data/model_02'.format(prj_dir)
 
 seed_everything(777)
 # Model hyper parameters
@@ -40,11 +40,11 @@ def train_toy():
     learner.test_n_case(show_indice=True)
 
 def train():
-    data_container, vectorizer = get_data_vecterizer(bs=1, vectorizer_path=vectorizer_path)
+    data_container, vectorizer = get_data_vecterizer(1, vectorizer_path, START_TAG, STOP_TAG)
     learner = get_learner(data_container, vectorizer)
 
     learner.model_info()
-    learner.fit_one_cycle(1, 0.1, only_save_best=True)
+    learner.fit_one_cycle(1, 0.1, only_save_best=False)
     learner.test_n_case(show_indice=True)
 
 if __name__ == "__main__":

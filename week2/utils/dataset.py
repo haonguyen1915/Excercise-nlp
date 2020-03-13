@@ -18,16 +18,14 @@ def understanding_data():
         print()
 
 
-def build_vocabs(train_tokens, train_tags, validation_tokens):
-    # train_tokens, train_tags = read_data('{}/week2/data/train.txt'.format(prj_dir))
-    # validation_tokens, validation_tags = read_data('{}/week2/data/validation.txt'.format(prj_dir))
-    # test_tokens, test_tags = read_data('{}/week2/data/test.txt'.format(prj_dir))
-    # special_tokens = ['<UNK>', '<PAD>']
-    # special_tags = ['O']
+def build_vocabs(train_tokens, train_tags, validation_tokens, begin_seq_token=None, end_seq_token=None):
     token2idx, idx2token = build_dict(train_tokens + validation_tokens)
     tag2idx, idx2tag = build_dict(train_tags)
     words_vocab = SequenceVocabulary(token_to_idx=token2idx, unk_token='<UNK>', mask_token='<PAD>')
-    tags_vob = SequenceVocabulary(token_to_idx=tag2idx, begin_seq_token=START_TAG, end_seq_token=STOP_TAG)
+    if begin_seq_token is not None and end_seq_token is not None:
+        tags_vob = SequenceVocabulary(token_to_idx=tag2idx, begin_seq_token=begin_seq_token, end_seq_token=end_seq_token)
+    else:
+        tags_vob = Vocabulary(token_to_idx=tag2idx)
     return words_vocab, tags_vob
 
 
@@ -114,12 +112,12 @@ def get_toy_data_vecterizer(bs=1):
     return data_container, my_vectorizer
 
 
-def get_data_vecterizer(bs, vectorizer_path="./vecterizer_default.pkl"):
+def get_data_vecterizer(bs, vectorizer_path="./vecterizer_default.pkl", start_seq_token=None, end_seq_token=None):
     train_tokens, train_tags = read_data('{}/week2/data/train.txt'.format(prj_dir))
     validation_tokens, validation_tags = read_data('{}/week2/data/validation.txt'.format(prj_dir))
     test_tokens, test_tags = read_data('{}/week2/data/test.txt'.format(prj_dir))
 
-    words_vocab, tags_vob = build_vocabs(train_tokens, train_tags, validation_tokens)
+    words_vocab, tags_vob = build_vocabs(train_tokens, train_tags, validation_tokens, start_seq_token, end_seq_token)
     if vectorizer_path is not None and os.path.isfile(vectorizer_path):
         my_vectorizer = load_context(vectorizer_path)
         print("Loaded vectorizer succsesfully")
