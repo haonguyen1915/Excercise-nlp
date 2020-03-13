@@ -38,6 +38,7 @@ def train_toy():
     learner.test_n_case(show_indice=True)
     # preds = learner.confusion_matrix()
     preds = learner.plot_confusion_matrix()
+    print(learner.validate())
     print(preds)
     # train_loader = learner.data_container.get_train_dl()
     # print("X: {}".format(x[0:1]))
@@ -60,28 +61,15 @@ def train():
 
 
 def evaluation():
-    data_container, vectorizer = get_data(bs=64)
-    vectorizer = load_context(vectorizer_path)
-    learner = get_learner()
-    learner.load("{}/week2/data/statge01".format(prj_dir))
-    text = ['Snapchat', '<USR>', ':', 'Snapchat', 'ticket', 'French', 'Telecom', 'Ghostland', 'Observatory', 'extended',
-            'until',
-            '6', 'PM', 'EST', 'due', 'to', 'high', 'demand', '.', 'Get', 'them', 'before', 'they', 'sell', 'out', '...']
-    # _, vectorizer = get_data(bs=1)
-    data, _ = vectorizer.vectorize(text, vector_length=50)
-    print(data)
-    print(type(data))
-
-    data = torch.from_numpy(data)
-    data = torch.unsqueeze(data, dim=0)
-    describe_tensor(data)
-
-    print(learner.predict(data))
-
+    data_container, vectorizer = get_data_vecterizer(bs=1, vectorizer_path="week2/data/vecterizer_01.pkl")
+    learner = get_learner(data_container, vectorizer)
+    learner.load("week2/data/model_01.ckpt")
+    learner.test_n_case()
+    learner.plot_confusion_matrix(ds_type=DS_VALID)
 
 if __name__ == "__main__":
-    train_toy()
+    # train_toy()
     # train()
     # test_some_case()
-    # evaluation()
+    evaluation()
     # predict("Sarraf")

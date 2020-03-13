@@ -4,6 +4,7 @@ from haolib import *
 from torch.nn import functional as F
 from torch import nn
 
+
 def read_data(file_path):
     tokens = []
     tags = []
@@ -92,50 +93,23 @@ def sequence_loss(y_pred, y_true, mask_index=20503):
     return F.cross_entropy(y_pred, y_true, ignore_index=mask_index)
 
 
-def set_up():
-    setup_week2()
+def argmax(vec):
+    # return the argmax as a python int
+    _, idx = torch.max(vec, 1)
+    return idx.item()
 
 
-def download_dataset():
-    import sys
-    sys.path.append("..")
-    from week2.common.download_utils import download_week2_resources
-    download_week2_resources()
+def prepare_sequence(seq, to_ix):
+    idxs = [to_ix[w] for w in seq]
+    return torch.tensor(idxs, dtype=torch.long)
 
 
-def accuracy(input, targs):
-    """
-        Computes accuracy with `targs` when `input` is bs * n_classes.
-            input: torch.Size([64, 10])-
-            targs: torch.Size([64])
-    """
-    if len(input.shape) > 1:
-        n = targs.shape[0]
-        input = input.argmax(dim=-1).view(n, -1)
-        targs = targs.view(n, -1)
-    else:
-        input = input > 0.5
-    return (input == targs).float().mean()
-
-
-class Acc(nn.Module):
-    def __init__(self, mask_idx):
-        super(Acc, self).__init__()
-        self._mask_idx = mask_idx
-
-    def forward(self, y_pred, y_true):
-        y_pred, y_true = normalize_sizes(y_pred, y_true)
-
-        _, y_pred_indices = y_pred.max(dim=1)
-
-        correct_indices = torch.eq(y_pred_indices, y_true).float()
-        valid_indices = torch.ne(y_true, self._mask_idx).float()
-
-        n_correct = (correct_indices * valid_indices).sum().item()
-        n_valid = valid_indices.sum().item()
-        acc = n_correct / n_valid * 100
-        acc = torch.FloatTensor([acc])
-        return acc
+# Compute log sum exp in a numerically stable way for the forward algorithm
+def log_sum_exp(vec):
+    max_score = vec[0, argmax(vec)]
+    max_score_broadcast = max_score.view(1, -1).expand(1, vec.size()[1])
+    return max_score + \
+           torch.log(torch.sum(torch.exp(vec - max_score_broadcast)))
 
 
 if __name__ == "__main__":
@@ -145,11 +119,6 @@ if __name__ == "__main__":
                            [1, 0],
                            [1, 0],
                            [1, 0]])
-    acc_func = Acc(mask_idx=-1)
     y_true = torch.tensor([1, 1, 1, 1, 0, 0])
     acc1 = compute_accuracy(y_pred, y_true)
-    acc2 = accuracy(y_pred, y_true)
-    acc3 = acc_func(y_pred, y_true)
     print(acc1)
-    print(acc2)
-    print(acc3)

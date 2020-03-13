@@ -1,4 +1,5 @@
 from week2.utils.utility import *
+from week2.utils.constants import *
 from haolib import *
 from haolib.lib_nlp.vocabulary import SequenceVocabulary, Vocabulary
 from haolib.lib_nlp.vectorizer import Vectorizer
@@ -26,7 +27,7 @@ def build_vocabs(train_tokens, train_tags, validation_tokens):
     token2idx, idx2token = build_dict(train_tokens + validation_tokens)
     tag2idx, idx2tag = build_dict(train_tags)
     words_vocab = SequenceVocabulary(token_to_idx=token2idx, unk_token='<UNK>', mask_token='<PAD>')
-    tags_vob = Vocabulary(token_to_idx=tag2idx)
+    tags_vob = SequenceVocabulary(token_to_idx=tag2idx, begin_seq_token=START_TAG, end_seq_token=STOP_TAG)
     return words_vocab, tags_vob
 
 
@@ -113,7 +114,7 @@ def get_toy_data_vecterizer(bs=1):
     return data_container, my_vectorizer
 
 
-def get_data_vecterizer(bs, vectorizer_path="./"):
+def get_data_vecterizer(bs, vectorizer_path="./vecterizer_default.pkl"):
     train_tokens, train_tags = read_data('{}/week2/data/train.txt'.format(prj_dir))
     validation_tokens, validation_tags = read_data('{}/week2/data/validation.txt'.format(prj_dir))
     test_tokens, test_tags = read_data('{}/week2/data/test.txt'.format(prj_dir))
