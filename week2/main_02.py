@@ -88,16 +88,11 @@ def get_model(data_container, vectorizer):
 #
 def train_toy():
     data_container, vectorizer = get_toy_data_vecterizer(1, START_TAG, STOP_TAG)
-    print(data_container)
-    exit()
-    # data_container.plot_histogram()
-    # data_container.show_batch()
     learner = get_learner(data_container, vectorizer)
     #
     learner.model_info()
     learner.fit_one_cycle(20, 0.1, only_save_best=True)
-    # learner.test_n_case(show_indice=True)
-
+    learner.plot_confusion_matrix()
 def train():
     data_container, vectorizer = get_data_vecterizer(bs=1, vectorizer_path=vectorizer_path)
     learner = get_learner(data_container, vectorizer)
@@ -112,3 +107,21 @@ if __name__ == "__main__":
     # test_some_case()
     # evaluation()
     # predict("Sarraf")
+    # [(tensor([[1., 0., 0., 0., 0., 0., 0.],
+    #           [0., 1., 0., 0., 0., 0., 0.],
+    #           [0., 1., 0., 0., 0., 0., 0.],
+    #           [0., 1., 0., 0., 0., 0., 0.],
+    #           [0., 1., 0., 0., 0., 0., 0.],
+    #           [0., 1., 0., 0., 0., 0., 0.],
+    #           [0., 1., 0., 0., 0., 0., 0.],
+    #           [0., 1., 0., 0., 0., 0., 0.],
+    #           [0., 1., 0., 0., 0., 0., 0.],
+    #           [0., 1., 0., 0., 0., 0., 0.],
+    #           [0., 1., 0., 0., 0., 0., 0.]]), tensor([0, 2, 2, 2, 1, 1, 1, 0, 2, 1, 1]), tensor([14.8451])),
+    #  (tensor([[1., 0., 0., 0., 0., 0., 0.],
+    #           [0., 1., 0., 0., 0., 0., 0.],
+    #           [0., 1., 0., 0., 0., 0., 0.],
+    #           [0., 1., 0., 0., 0., 0., 0.],
+    #           [0., 1., 0., 0., 0., 0., 0.],
+    #           [1., 0., 0., 0., 0., 0., 0.],
+    #           [0., 0., 0., 1., 0., 0., 0.]]), tensor([0, 2, 1, 1, 1, 1, 0]), tensor([7.4639]))]

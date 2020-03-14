@@ -3,7 +3,7 @@ from week2.utils.constants import *
 from haolib import *
 from haolib.lib_nlp.vocabulary import SequenceVocabulary, Vocabulary
 from haolib.lib_nlp.vectorizer import Vectorizer
-from haolib.lib_nlp.text_container import TextContainer
+from haolib.lib_nlp.text_container import TextContainer, DataContainer
 
 prj_dir = get_cfd(backward=2)
 
@@ -107,7 +107,8 @@ def get_toy_data_vecterizer(bs=1, tart_seq_token=None, end_seq_token=None):
     train_ds = MyDataset(my_vectorizer, train_tokens, train_tags)
     valid_ds = MyDataset(my_vectorizer, train_tokens, train_tags)
     test_ds = MyDataset(my_vectorizer, train_tokens, train_tags)
-    data_container = TextContainer(train_ds=train_ds, valid_ds=valid_ds, test_ds=test_ds, bs=bs, vectorizer=my_vectorizer)
+    # data_container = TextContainer(train_ds=train_ds, valid_ds=valid_ds, test_ds=test_ds, bs=bs, vectorizer=my_vectorizer)
+    data_container = DataContainer(train_ds=train_ds, valid_ds=valid_ds, test_ds=test_ds, bs=bs)
 
     return data_container, my_vectorizer
 

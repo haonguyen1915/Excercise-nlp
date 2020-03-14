@@ -6,7 +6,8 @@ from week2.utils.utility import *
 from week2.utils.dataset import *
 from week2.utils.model import LSTMNERClassifier
 from torch import optim
-from haolib.lib_ai.seq2seq_learner import Seq2SeqLearner
+from haolib.lib_nlp.seq2seq_learner import Seq2SeqLearner
+from haolib.lib_nlp.seq2seq_learner import Seq2SeqLearner
 from torch import nn
 
 prj_dir = get_cfd(backward=1)
@@ -36,7 +37,8 @@ def train_toy():
     learner.model_info()
     learner.fit_one_cycle(20, 0.1, only_save_best=True)
     learner.test_n_case(show_indice=True)
-
+    learner.plot_confusion_matrix()
+    plt.show()
 def train():
     data_container, vectorizer = get_data_vecterizer(bs=1)
     learner = get_learner(data_container, vectorizer)
@@ -56,6 +58,7 @@ def evaluation():
     learner.load("week2/data/model_01.ckpt")
     learner.test_n_case()
     learner.plot_confusion_matrix(ds_type=DS_VALID)
+    plt.show()
 
 if __name__ == "__main__":
     train_toy()
