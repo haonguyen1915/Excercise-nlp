@@ -190,7 +190,8 @@ class BiLSTM_CRF(nn.Module):
 
         # Find the best path, given the features.
         score, tag_seq = self._viterbi_decode(lstm_feats)
-        return score, tag_seq
+        tag_seq = one_hot_embedding(tag_seq, self.tagset_size)
+        return tag_seq
 
 
 if __name__ == "__main__":
