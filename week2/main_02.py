@@ -88,6 +88,8 @@ def get_model(data_container, vectorizer):
 #
 def train_toy():
     data_container, vectorizer = get_toy_data_vecterizer(1, START_TAG, STOP_TAG)
+    print(data_container)
+    exit()
     # data_container.plot_histogram()
     # data_container.show_batch()
     learner = get_learner(data_container, vectorizer)
